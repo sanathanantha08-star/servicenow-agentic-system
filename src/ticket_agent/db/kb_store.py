@@ -12,7 +12,7 @@ async def insert_kb_documents(kb_entries: List[KBDocument]) -> None:
     """
     db = get_database()
     collection = db[settings.mongo.kb_collection]
-    await collection.insert_many([entry.dict() for entry in kb_entries])
+    await collection.insert_many([entry.model_dump() for entry in kb_entries])
 
 
 async def search_kb_documents(query_vector: List[float], top_k: int = 5) -> List[KBSearchResult]:
@@ -22,7 +22,7 @@ async def search_kb_documents(query_vector: List[float], top_k: int = 5) -> List
     {
         "$vectorSearch": {
             "index": "kb_vector_index",       # name of the Atlas Search index you create on this collection
-            "path": "embedding",              # the field in your documents holding the vector
+            "path": "vectors",              # the field in your documents holding the vector
             "queryVector": query_vector,   # the embedding you're searching with
             "numCandidates": top_k * 10,      # how many candidates Mongo considers before narrowing down
             "limit": top_k,                   # how many results you actually want back
@@ -30,11 +30,15 @@ async def search_kb_documents(query_vector: List[float], top_k: int = 5) -> List
     },
     {
         "$project": {
-            "_id": 1,
+           
             "title": 1,
             "content": 1,
             "category": 1,
-            "score": {"$meta": "vectorSearchScore"},  # the similarity score gets attached here
+            "score": {"$meta": "vectorSearchScore"},
+            "vectors": 1,
+            "created_at": 1,
+            "updated_at": 1,
+            "document_id": "$_id",  # the similarity score gets attached here
         }
     },
 ]

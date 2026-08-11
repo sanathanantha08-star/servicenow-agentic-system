@@ -21,3 +21,4 @@ class Ticket(BaseModel):
     priority: TicketPriority | None = Field(default=None, description="...")
     created_at: datetime = Field(..., description="Timestamp when the ticket was created")
     updated_at: datetime = Field(..., description="Timestamp when the ticket was last updated")
+    embedding: list[float] | None = Field(default=None, description="Vector representation of the ticket for semantic search")
